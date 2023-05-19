@@ -3,6 +3,7 @@ import os
 import shutil
 import random
 import cv2
+import numpy 
 
 
 """
@@ -53,9 +54,11 @@ def parseLabels(file):
                         colList.append(i)
                 l[colList[0]+1:colList[1]]
                 keydict[l[0:colList[0]]] = l[colList[0]+1:colList[1]]
-    return(keydict)       
-               
+    return(keydict)
 
+def rgb_to_bgr(rgb):
+    b, g, r = rgb
+    return [r, g, b]
 
 def parseMasks(file,keys):
     """
@@ -69,10 +72,13 @@ def parseMasks(file,keys):
     saves files at path.label.png 
     """
     img = cv2.imread(file)
-    #print(file)
+    print(file)
+    #cv2.imshow(img,'mask')
     for label in keys.keys():
+        print("Finding "+label)
         if label != "Wings":
             color = (keys[label])
+            print('color match is '+str(color))
             clist = []
             num = ''
             for l in color:
@@ -82,14 +88,14 @@ def parseMasks(file,keys):
                     clist.append(int(num))
                     num = ''
             clist.append(int(num))
-            mask = cv2.inRange(img,tuple(clist),tuple(clist))
+            bgr_color = rgb_to_bgr(clist)
+            print("color in rgb "+str(clist)+" and color in bgr "+str(bgr_color))
+            mask = cv2.inRange(img,tuple(bgr_color),tuple(bgr_color))
+            print("saving "+file[:-3]+label+".png")
             cv2.imwrite( file[:-3]+label+".png",mask)
         
 
 keydict = parseLabels(labelFile)
+print(keydict)
 parseMasks(maskFile,keydict)
-
-        
-
-        
 
